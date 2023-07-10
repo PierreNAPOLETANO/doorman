@@ -37,12 +37,7 @@ class ProportionalShareAlgorithm(AlgorithmImpl):
     all_wants = sum_wants(resource)
 
     # Determines the capacity we have now.
-    if resource.HasField('has'):
-      has = resource.has.capacity
-    else:
-      # This can happen when the server was not able to get capacity
-      # from a downstream server.
-      has = 0
+    has = resource.has.capacity if resource.HasField('has') else 0
 
     # Calculates the free capacity.
     free_capacity = max(has - sum_leases(resource), 0)

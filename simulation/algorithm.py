@@ -39,10 +39,7 @@ class AlgorithmImpl(object):
     # we will use. If not there might be a default algorithm
     # specified in the configuration. If that is not available
     # we default to the "None" algorithm.
-    if template.HasField('algorithm'):
-      algo = template.algorithm
-    else:
-      algo = global_config.get_default_algorithm()
+    algo = template.algorithm if template.HasField('algorithm') else global_config.get_default_algorithm()
 
     if algo.name == 'Static':
       from algo_static import StaticAlgorithm
@@ -115,11 +112,7 @@ class AlgorithmImpl(object):
 
     # The server cannot give out a lease that lasts longer than
     # it itself has capacity for from a lower level.
-    if resource.HasField('has'):
-      lease.expiry_time = min(
-          resource.has.expiry_time, now + self.lease_duration_secs)
-    else:
-      lease.expiry_time = now + self.lease_duration_secs
+    lease.expiry_time = min(resource.has.expiry_time, now + self.lease_duration_secs) if resource.HasField('has') else now + self.lease_duration_secs
 
     # Edge case: If we are near the end of the lease we must make sure
     # that the refresh interval does not tell the client to do a refresh

@@ -87,10 +87,7 @@ class ServerStateWrapper(object):
         continue
 
       # How much capacity does this server have for this resource?
-      if resource.HasField('has'):
-        has = resource.has.capacity
-      else:
-        has = 0
+      has = resource.has.capacity if resource.HasField('has') else 0
 
       data = ReportingData()
       data.wants = sum_wants(resource)

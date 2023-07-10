@@ -348,11 +348,7 @@ class Server(object):
         # If the resource is in learning mode we just return whatever the client
         # has now and create a default lease.
         if resource.learning_mode_expiry_time >= now:
-          if sr.HasField('has'):
-            has_now = sr.has.capacity
-          else:
-            has_now = 0
-
+          has_now = sr.has.capacity if sr.HasField('has') else 0
           sr.has.CopyFrom(algo.create_lease(resource, has_now))
         else:
           # Otherwise we just run the algorithm. This will update the
@@ -478,11 +474,7 @@ class Server(object):
         # If the resource is in learning mode we just return whatever the client
         # has now and create a default lease.
         if resource.learning_mode_expiry_time >= now:
-          if cr.HasField('has'):
-            has_now = cr.has.capacity
-          else:
-            has_now = 0
-
+          has_now = cr.has.capacity if cr.HasField('has') else 0
           cr.has.CopyFrom(algo.create_lease(resource, has_now))
           Counter.get('server.learning_mode_response').inc()
         else:
@@ -519,13 +511,8 @@ class Server(object):
       return _kTheEndOfTime
 
     # If this is not the root server we might need to do a discovery.
-    if self.server_level > 0:
-      # If we don't know who the master is let's figure this out.
-      if not self.master:
-        # If discovery failed, try another discovery in the
-        # near future
-        if not self._discover():
-          return _kDefaultDiscoveryInterval
+    if self.server_level > 0 and not self.master and not self._discover():
+      return _kDefaultDiscoveryInterval
 
     # Either we know who the master is or we don't need to know because
     # we are the root server. Let's get some capacity. If this
@@ -533,7 +520,6 @@ class Server(object):
     if not self._get_capacity():
       Counter.get('server.reschedule_discovery').inc()
       self.master = None
-
       return 0
 
     # Returns the interval in which we need to refresh our capacity
